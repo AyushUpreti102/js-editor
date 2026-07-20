@@ -8,7 +8,6 @@ const getCodeEditor = () => {
   const css = ref(null)
   const js = ref(null)
   const consoles = ref([])
-  const srcdoc = ref('')
 
   const updateHtmlCode = (val) => {
     html.value = val
@@ -25,10 +24,10 @@ const getCodeEditor = () => {
   const addConsole = (val) => consoles.value.push(val)
   const clearConsole = () => (consoles.value = [])
 
-  const executeCode = () => {
+  const executeCode = (iframeRef) => {
     clearConsole()
 
-    srcdoc.value = `
+    iframeRef.value.srcdoc = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -54,7 +53,6 @@ const getCodeEditor = () => {
     css,
     js,
     consoles,
-    srcdoc,
     updateHtmlCode,
     updateCssCode,
     updateJsCode,

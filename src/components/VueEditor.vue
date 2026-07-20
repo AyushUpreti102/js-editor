@@ -1,6 +1,6 @@
 <template>
   <div class="editor-layout">
-    <EditorHeader />
+    <EditorHeader @on-execute="runCode" />
 
     <main class="workspace">
       <!-- HTML -->
@@ -41,7 +41,7 @@
         <div class="panel-header">Preview</div>
 
         <div class="preview-container">
-          <iframe ref="previewIframe" frameborder="0" :srcdoc="srcdoc"></iframe>
+          <iframe ref="previewIframe" frameborder="0"></iframe>
         </div>
       </section>
 
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { CodeEditor } from 'monaco-editor-vue3'
 import { useCodeEditor } from '../utils/useCodeEditor'
 import EditorHeader from './EditorHeader.vue'
@@ -72,11 +72,13 @@ const editorOptions = {
   automaticLayout: true,
 }
 
+const previewIframe = ref(null)
+
 const {
   js,
   css,
   html,
-  srcdoc,
+  executeCode,
   updateHtmlCode,
   updateCssCode,
   updateJsCode,
@@ -110,6 +112,10 @@ const jsCode = computed({
     updateJsCode(val)
   },
 })
+
+const runCode = () => {
+  executeCode(previewIframe)
+}
 
 const updateConsole = (event) => {
   if (event.data && event.data.type === 'IFRAME_CONSOLE') {

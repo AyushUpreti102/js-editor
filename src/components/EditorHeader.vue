@@ -1,20 +1,16 @@
 <template>
-    <header class="header">
-      <div class="logo">
-        <span class="logo-icon">JS</span>
-        <h2>JavaScript Playground</h2>
-      </div>
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">JS</span>
+      <h2>JavaScript Playground</h2>
+    </div>
 
-      <button class="run-btn" @click="executeCode">▶ Run</button>
-    </header>
+    <button class="run-btn" @click="$emit('onExecute')">▶ Run</button>
+  </header>
 </template>
 
 <script setup>
-import { useCodeEditor } from '../utils/useCodeEditor';
-
-const {
-  executeCode
-} = useCodeEditor()
+defineEmits(['onExecute'])
 </script>
 
 <style scoped>
