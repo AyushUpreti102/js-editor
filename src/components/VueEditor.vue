@@ -1,56 +1,70 @@
 <template>
   <div class="editor-layout">
-    <!-- Header -->
-    <header class="header">
-      <div class="logo">
-        <span class="logo-icon">JS</span>
-        <h2>JavaScript Playground</h2>
-      </div>
+    <EditorHeader />
 
-      <button class="run-btn" @click="runCode">▶ Run</button>
-    </header>
+    <main class="workspace">
+      <!-- HTML -->
+      <section class="panel html-panel">
+        <div class="panel-header">HTML</div>
+        <CodeEditor
+          v-model:value="htmlCode"
+          language="html"
+          theme="vs-dark"
+          :options="editorOptions"
+        />
+      </section>
 
-    <!-- Main -->
-    <main class="main-content">
-      <!-- Editor -->
-      <section class="editor-panel">
-        <div class="panel-header">
-          <span>JavaScript</span>
-        </div>
+      <!-- CSS -->
+      <section class="panel css-panel">
+        <div class="panel-header">CSS</div>
+        <CodeEditor
+          v-model:value="cssCode"
+          language="css"
+          theme="vs-dark"
+          :options="editorOptions"
+        />
+      </section>
 
-        <div class="editor-container">
-          <CodeEditor
-            v-model:value="code"
-            language="javascript"
-            theme="vs-dark"
-            :options="editorOptions"
-          />
+      <!-- JavaScript -->
+      <section class="panel js-panel">
+        <div class="panel-header">JavaScript</div>
+        <CodeEditor
+          v-model:value="jsCode"
+          language="javascript"
+          theme="vs-dark"
+          :options="editorOptions"
+        />
+      </section>
+
+      <!-- Preview -->
+      <section class="panel preview-panel">
+        <div class="panel-header">Preview</div>
+
+        <div class="preview-container">
+          <iframe ref="previewIframe" frameborder="0" :srcdoc="srcdoc"></iframe>
         </div>
       </section>
 
       <!-- Console -->
-      <aside class="console-panel">
+      <section class="panel console-panel">
         <div class="panel-header">
           <span>Console</span>
 
-          <button class="clear-btn">Clear</button>
+          <button class="clear-btn" @click="clearConsole">Clear</button>
         </div>
 
-        <div class="console-body">
-          <div class="console-info">> Console ready...</div>
-
-          <div class="console-log">Hello World</div>
-
-          <div class="console-error">ReferenceError: x is not defined</div>
-        </div>
-      </aside>
+        <EditorConsole />
+      </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { CodeEditor } from 'monaco-editor-vue3'
+import { useCodeEditor } from '../utils/useCodeEditor'
+import EditorHeader from './EditorHeader.vue'
+import EditorConsole from './EditorConsole.vue'
 
 const editorOptions = {
   fontSize: 14,
@@ -58,156 +72,171 @@ const editorOptions = {
   automaticLayout: true,
 }
 
-const code = ref(null)
+const {
+  js,
+  css,
+  html,
+  srcdoc,
+  updateHtmlCode,
+  updateCssCode,
+  updateJsCode,
+  addConsole,
+  clearConsole,
+} = useCodeEditor()
 
-const runCode = () => {
-  console.log(code.value)
+const htmlCode = computed({
+  get() {
+    return html.value
+  },
+  set(val) {
+    updateHtmlCode(val)
+  },
+})
+
+const cssCode = computed({
+  get() {
+    return css.value
+  },
+  set(val) {
+    updateCssCode(val)
+  },
+})
+
+const jsCode = computed({
+  get() {
+    return js.value
+  },
+  set(val) {
+    updateJsCode(val)
+  },
+})
+
+const updateConsole = (event) => {
+  if (event.data && event.data.type === 'IFRAME_CONSOLE') {
+    const { method, arguments: args } = event.data
+
+    addConsole({
+      method,
+      args,
+    })
+  }
 }
+
+onMounted(() => {
+  window.addEventListener('message', updateConsole)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('message', updateConsole)
+})
 </script>
 
 <style scoped>
-* {
-  box-sizing: border-box;
-}
-
 .editor-layout {
   height: 100vh;
   display: flex;
   flex-direction: column;
   background: #1e1e1e;
-  color: white;
 }
 
-/* Header */
-
-.header {
-  height: 60px;
-  background: #252526;
-  border-bottom: 1px solid #383838;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 0 24px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: #f7df1e;
-  color: black;
-  font-weight: bold;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.logo h2 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.run-btn {
-  background: #16a34a;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.run-btn:hover {
-  background: #15803d;
-}
-
-/* Main */
-
-.main-content {
+.workspace {
   flex: 1;
-  display: flex;
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 35% 35% 30%;
+
+  gap: 8px;
+  padding: 8px;
+
   overflow: hidden;
 }
 
-/* Editor */
-
-.editor-panel {
-  flex: 3;
+.panel {
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #333;
+  overflow: hidden;
+
+  background: #252526;
+  border: 1px solid #3b3b3b;
+  border-radius: 8px;
+  min-height: 0;
 }
 
 .panel-header {
   height: 42px;
-  background: #2d2d30;
-  border-bottom: 1px solid #383838;
+  flex-shrink: 0;
 
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
   padding: 0 16px;
+
+  background: #2d2d30;
+  border-bottom: 1px solid #3b3b3b;
+
   font-weight: 600;
 }
 
-.editor-container {
-  padding: 0.5rem;
+/* Monaco fills remaining space */
+
+.panel :deep(.monaco-editor),
+.panel :deep(.monaco-editor-background),
+.panel :deep(.overflow-guard) {
+  height: 100% !important;
+}
+
+.panel > :last-child {
   flex: 1;
-  background: #1e1e1e;
+}
+
+/* Grid positioning */
+
+.html-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.css-panel {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.js-panel {
+  grid-column: 1;
+  grid-row: 2 / 4;
+}
+
+.preview-panel {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.console-panel {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* Preview */
+
+.preview-container {
+  flex: 1;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  color: #666;
+  color: #777;
   font-size: 18px;
+
+  border: 2px dashed #555;
 }
 
-.editor-container div {
+.preview-container iframe {
   height: 100%;
   width: 100%;
-}
-
-/* Console */
-
-.console-panel {
-  width: 360px;
-  display: flex;
-  flex-direction: column;
-  background: #181818;
-}
-
-.console-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px;
-  font-family: Consolas, monospace;
-  font-size: 14px;
-}
-
-.console-info {
-  color: #7aa2f7;
-  margin-bottom: 10px;
-}
-
-.console-log {
-  color: #22c55e;
-  margin-bottom: 10px;
-}
-
-.console-error {
-  color: #ef4444;
+  background-color: white;
 }
 
 .clear-btn {
