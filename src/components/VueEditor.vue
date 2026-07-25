@@ -185,16 +185,10 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
-/* Monaco fills remaining space */
-
-.panel :deep(.monaco-editor),
-.panel :deep(.monaco-editor-background),
-.panel :deep(.overflow-guard) {
-  height: 100% !important;
-}
-
 .panel > :last-child {
   flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 /* Grid positioning */
