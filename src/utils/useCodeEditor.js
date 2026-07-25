@@ -27,25 +27,33 @@ const getCodeEditor = () => {
   const executeCode = (iframeRef) => {
     clearConsole()
 
+    // Safety check to ensure the iframe exists in the DOM
+    if (!iframeRef || !iframeRef.value) return
+
+    // Prevent "null" or "undefined" from rendering as strings
+    const safeHtml = html.value || ''
+    const safeCss = css.value || ''
+    const safeJs = js.value || ''
+
     iframeRef.value.srcdoc = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            ${css.value}
-          </style>
-        </head>
-        <body>
-          ${html.value}
-          <script>
-            ${iframeScript}
-          <\/script>
-          <script>
-            ${js.value}
-          <\/script>
-        </body>
-      </html>
-    `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          ${safeCss}
+        </style>
+      </head>
+      <body>
+        ${safeHtml}
+        <script>
+          ${iframeScript || ''}
+        <\/script>
+        <script>
+          ${safeJs}
+        <\/script>
+      </body>
+    </html>
+  `
   }
 
   return {

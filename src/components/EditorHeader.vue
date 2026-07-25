@@ -5,27 +5,39 @@
       <h2>JavaScript Playground</h2>
     </div>
 
-    <button class="run-btn" @click="$emit('onExecute')">▶ Run</button>
+    <div class="header-actions">
+      <select
+        v-model="currentMode"
+        @change="$emit('updateMode', currentMode)"
+        class="mode-selector"
+      >
+        <option value="all">All</option>
+        <option value="html-css">HTML & CSS</option>
+        <option value="js">JavaScript</option>
+      </select>
+
+      <button class="run-btn" @click="$emit('onExecute')">▶ Run</button>
+    </div>
   </header>
 </template>
 
 <script setup>
-defineEmits(['onExecute'])
+import { ref } from 'vue'
+
+const currentMode = ref('all')
+defineEmits(['onExecute', 'updateMode'])
 </script>
 
 <style scoped>
-/* Header */
-
 .header {
-  height: 60px;
-  background: #252526;
-  border-bottom: 1px solid #383838;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  padding: 0 24px;
+  padding: 0 16px;
+  height: 50px;
+  background: #252526;
+  border-bottom: 1px solid #3b3b3b;
+  color: white;
 }
 
 .logo {
@@ -35,35 +47,40 @@ defineEmits(['onExecute'])
 }
 
 .logo-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
   background: #f7df1e;
   color: black;
   font-weight: bold;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-.logo h2 {
-  font-size: 18px;
-  font-weight: 600;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mode-selector {
+  background: #3c3c3c;
+  color: white;
+  border: 1px solid #555;
+  padding: 6px 12px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
 }
 
 .run-btn {
-  background: #16a34a;
+  background: #4caf50;
   color: white;
   border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
+  padding: 6px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
 .run-btn:hover {
-  background: #15803d;
+  background: #45a049;
 }
 </style>
