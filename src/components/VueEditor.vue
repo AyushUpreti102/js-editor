@@ -1,6 +1,6 @@
 <template>
   <div class="editor-layout">
-    <EditorHeader @on-execute="runCode" @update-mode="setMode" />
+    <EditorHeader :current-mode="currentMode" @on-execute="runCode" @update-mode="setMode" />
 
     <main class="workspace" :class="`mode-${currentMode}`">
       <!-- HTML -->
@@ -64,17 +64,13 @@ import { CodeEditor } from 'monaco-editor-vue3'
 import { useCodeEditor } from '../utils/useCodeEditor'
 import EditorHeader from './EditorHeader.vue'
 import EditorConsole from './EditorConsole.vue'
+import { useLocalStorage } from '@/utils/useLocalStorage'
 
 const editorOptions = {
   fontSize: 14,
   minimap: { enabled: false },
   automaticLayout: true,
 }
-
-// Mode Management
-const currentMode = ref('all')
-
-const previewIframe = ref(null)
 
 const {
   js,
@@ -87,6 +83,13 @@ const {
   addConsole,
   clearConsole,
 } = useCodeEditor()
+
+const { editorMode, saveEditorMode } = useLocalStorage()
+
+// Mode Management
+const currentMode = ref(editorMode.value || 'all')
+
+const previewIframe = ref(null)
 
 const htmlCode = computed({
   get() {
@@ -121,6 +124,7 @@ const showPreview = computed(() => currentMode.value !== 'js')
 
 const setMode = (mode) => {
   currentMode.value = mode
+  saveEditorMode(mode)
 }
 
 const runCode = () => {

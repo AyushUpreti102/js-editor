@@ -1,5 +1,7 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import iframeScript from '@/constants/iframeScript'
+import { useLocalStorage } from './useLocalStorage'
+import { useDebounce } from './useDebounce'
 
 let instance
 
@@ -8,6 +10,8 @@ const getCodeEditor = () => {
   const css = ref(null)
   const js = ref(null)
   const consoles = ref([])
+
+  const { savedHtml, savedCss, savedJs, saveCode } = useLocalStorage()
 
   const updateHtmlCode = (val) => {
     html.value = val
@@ -21,8 +25,24 @@ const getCodeEditor = () => {
     js.value = val
   }
 
+  const saveCodeToLocalStorage = (htmlCode, cssCode, jsCode) => {
+    const safeHtml = htmlCode || ''
+    const safeCss = cssCode || ''
+    const safeJs = jsCode || ''
+
+    saveCode({ html: safeHtml, css: safeCss, js: safeJs })
+  }
+
+  const debounceSave = useDebounce(saveCodeToLocalStorage)
+
   const addConsole = (val) => consoles.value.push(val)
   const clearConsole = () => (consoles.value = [])
+
+  const loadSavedCode = () => {
+    html.value = savedHtml.value || ''
+    css.value = savedCss.value || ''
+    js.value = savedJs.value || ''
+  }
 
   const executeCode = (iframeRef) => {
     clearConsole()
@@ -55,6 +75,12 @@ const getCodeEditor = () => {
     </html>
   `
   }
+
+  loadSavedCode()
+
+  watch(html, () => debounceSave(html.value, css.value, js.value))
+  watch(css, () => debounceSave(html.value, css.value, js.value))
+  watch(js, () => debounceSave(html.value, css.value, js.value))
 
   return {
     html,

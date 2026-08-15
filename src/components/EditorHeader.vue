@@ -6,11 +6,7 @@
     </div>
 
     <div class="header-actions">
-      <select
-        v-model="currentMode"
-        @change="$emit('updateMode', currentMode)"
-        class="mode-selector"
-      >
+      <select v-model="mode" class="mode-selector">
         <option value="all">All</option>
         <option value="html-css">HTML & CSS</option>
         <option value="js">JavaScript</option>
@@ -22,10 +18,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 
-const currentMode = ref('all')
-defineEmits(['onExecute', 'updateMode'])
+const props = defineProps({
+  currentMode: {
+    type: String,
+    default: 'all',
+  },
+})
+const emits = defineEmits(['onExecute', 'updateMode'])
+
+const mode = computed({
+  get() {
+    return props.currentMode
+  },
+  set(val) {
+    emits('updateMode', val)
+  },
+})
 </script>
 
 <style scoped>
